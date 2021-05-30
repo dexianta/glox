@@ -7,6 +7,8 @@ import (
 	"os"
 )
 
+var hadError = false
+
 func main() {
 	if len(os.Args) > 2 {
 		panic("Usage: glox [script]")
@@ -24,7 +26,7 @@ func runFile(path string) error {
 		return err
 	}
 
-	return run(contentBytes)
+	return run(string(contentBytes))
 }
 
 func runPrompt() error {
@@ -34,13 +36,22 @@ func runPrompt() error {
 		//TODO: multi-line input
 		line, err := reader.ReadString('\n')
 		if err != nil {
-			return err
+			fmt.Println(err.Error())
 		}
 
-		run(line)
+		if err := run(line); err != nil {
+			fmt.Println(err.Error())
+		}
 	}
 }
 
 func run(code string) error {
-	
+	scanner := NewScanner(code)
+
+	tokens := scanner.scanTokens()
+	for _, t := range tokens {
+		fmt.Println(t)
+	}
+
+	return nil
 }
