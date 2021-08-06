@@ -1,6 +1,10 @@
-package main
+package scanner
 
-import "fmt"
+import (
+	"fmt"
+)
+
+var hadError = false
 
 type TokenType uint
 
@@ -72,7 +76,7 @@ func NewScanner(source string) Scanner {
 	return Scanner{Source: source}
 }
 
-func (s *Scanner) scanTokens() []Token {
+func (s *Scanner) ScanTokens() []Token {
 	for !s.IsAtEnd() {
 		s.start = s.current
 		s.scanToken()
@@ -89,8 +93,6 @@ func (s *Scanner) scanTokens() []Token {
 
 func (s *Scanner) scanToken() {
 	c := s.advance()
-	fmt.Println("--------------")
-	fmt.Printf("%c\n", c)
 	switch c {
 	case '(': s.addToken(LEFT_PAREN, nil)
 	case ')': s.addToken(RIGHT_PAREN, nil)
@@ -152,7 +154,6 @@ func (s *Scanner) scanToken() {
 
 	default:
 		logErr(s.line, "Unexpected character")
-
 	}
 }
 
@@ -231,4 +232,12 @@ func (s *Scanner) addToken(Type TokenType, literal interface{}) {
 		Literal: literal,
 		Line:    s.line,
 	})
+}
+func logErr(line int, msg string) {
+	report(line, "", msg)
+}
+
+func report(line int, where, msg string) {
+	fmt.Printf("[line \"%d\"] Error %s \": \" %s", line, where, msg)
+	hadError = true
 }

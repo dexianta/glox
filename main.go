@@ -2,12 +2,12 @@ package main
 
 import (
 	"bufio"
+	"dexianta/glox/scanner"
 	"fmt"
 	"io/ioutil"
 	"os"
 )
 
-var hadError = false
 
 func main() {
 	if len(os.Args) > 2 {
@@ -46,9 +46,8 @@ func runPrompt() error {
 }
 
 func run(code string) error {
-	scanner := NewScanner(code)
-
-	tokens := scanner.scanTokens()
+	s := scanner.NewScanner(code)
+	tokens := s.ScanTokens()
 	for _, t := range tokens {
 		fmt.Println(t)
 	}
@@ -56,11 +55,4 @@ func run(code string) error {
 	return nil
 }
 
-func logErr(line int, msg string) {
-	report(line, "", msg)
-}
 
-func report(line int, where, msg string) {
-	fmt.Printf("[line \"%d\"] Error %s \": \" %s", line, where, msg)
-	hadError = true
-}
