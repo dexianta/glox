@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 type TokenType uint
 
 const (
@@ -21,7 +23,7 @@ const (
 	BANG_EQUAL
 	EQUAL
 	EQUAL_EQUAL
-	GERATER
+	GREATER
 	GREATER_EQUAL
 	LESS
 	LESS_EUQAL
@@ -87,6 +89,8 @@ func (s *Scanner) scanTokens() []Token {
 
 func (s *Scanner) scanToken() {
 	c := s.advance()
+	fmt.Println("--------------")
+	fmt.Printf("%c\n", c)
 	switch c {
 	case '(': s.addToken(LEFT_PAREN, nil)
 	case ')': s.addToken(RIGHT_PAREN, nil)
@@ -102,12 +106,34 @@ func (s *Scanner) scanToken() {
 	case '!':
 		if s.match('=') {
 			s.addToken(BANG_EQUAL, nil)
+		} else {
+			s.addToken(BANG, nil)
 		}
-		s.addToken(BANG, nil)
+
+	case '=':
+		if s.match('=') {
+			s.addToken(EQUAL_EQUAL, nil)
+		} else {
+			s.addToken(EQUAL, nil)
+		}
+
+	case '<':
+		if s.match('=') {
+			s.addToken(LESS_EUQAL, nil)
+		} else {
+			s.addToken(LESS, nil)
+		}
+
+	case '>':
+		if s.match('=') {
+			s.addToken(GREATER_EQUAL, nil)
+		} else {
+			s.addToken(GREATER, nil)
+		}
 
 	case '/':
 		if s.match('/') {
-			for !s.match('\n') && !s.IsAtEnd() {
+			for !equalBytes(s.peek(0), []byte{'\n'}) && !s.IsAtEnd() {
 				s.advance()
 			}
 		} else if s.match('*') {
@@ -118,12 +144,33 @@ func (s *Scanner) scanToken() {
 			s.addToken(SLASH, nil)
 		}
 
+	case '\r':
+	case '\t':
+	case '\n':
+		fmt.Println("new lineeeee")
+		s.line++
+
 	default:
 		logErr(s.line, "Unexpected character")
 
 	}
 }
 
+func equalBytes(a []byte, b []byte) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
+	for idx := range a {
+		if a[idx] != b[idx] {
+			return false
+		}
+	}
+
+	return true
+}
+
+//IsAtEnd represents there's no more character left to consume
 func (s *Scanner) IsAtEnd() bool {
 	return s.current >= len(s.Source)
 }
@@ -138,11 +185,15 @@ func (s *Scanner) advance() byte {
 	return s.Source[idx]
 }
 
-func (s *Scanner) peek() (byte, bool) {
-	if s.IsAtEnd() {
-		return '0', true
+func (s *Scanner) peek(step int) (res []byte) {
+	if s.IsAtEndOffset(step) {
+		return
 	}
-	return s.Source[s.current], false
+
+	for i := s.current; i <= s.current + step; i++ {
+		res = append(res, s.Source[i])
+	}
+	return
 }
 
 //func(s *Scanner) match(char byte) bool {
