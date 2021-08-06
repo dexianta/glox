@@ -1,5 +1,2 @@
-##A GO re-implementation of the lox langauge from [crafting interpreters](https://craftinginterpreters.com/)
-I'm sure like most coder, you probably also wondered at some point how text on the screen gets
-executed on silicon.  
-
-This is one of my quest for that question as someone who didn't major in CS.
+##A GO re-implementation of the lox language from [crafting interpreters](https://craftinginterpreters.com/)
+To me, programming languages are just quite fun in and of itself. It has a certain "chicken-and-egg" existential charm to it.
