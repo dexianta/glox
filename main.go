@@ -36,11 +36,11 @@ func runPrompt() error {
 		//TODO: multi-line input
 		line, err := reader.ReadString('\n')
 		if err != nil {
-			fmt.Println(err.Error())
+			fmt.Println("error reading line: ", err.Error())
 		}
 
 		if err := run(line); err != nil {
-			fmt.Println(err.Error())
+			fmt.Println("error running line: ", err.Error())
 		}
 	}
 }
@@ -54,4 +54,13 @@ func run(code string) error {
 	}
 
 	return nil
+}
+
+func logErr(line int, msg string) {
+	report(line, "", msg)
+}
+
+func report(line int, where, msg string) {
+	fmt.Printf("[line \"%d\"] Error %s \": \" %s", line, where, msg)
+	hadError = true
 }

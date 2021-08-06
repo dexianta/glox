@@ -99,6 +99,28 @@ func (s *Scanner) scanToken() {
 	case '*': s.addToken(STAR, nil)
 	case ';': s.addToken(SEMICOLON, nil)
 
+	case '!':
+		if s.match('=') {
+			s.addToken(BANG_EQUAL, nil)
+		}
+		s.addToken(BANG, nil)
+
+	case '/':
+		if s.match('/') {
+			for !s.match('\n') && !s.IsAtEnd() {
+				s.advance()
+			}
+		} else if s.match('*') {
+			for !s.match('*', '/') && !s.IsAtEnd(){
+				s.advance()
+			}
+		} else {
+			s.addToken(SLASH, nil)
+		}
+
+	default:
+		logErr(s.line, "Unexpected character")
+
 	}
 }
 
@@ -106,10 +128,48 @@ func (s *Scanner) IsAtEnd() bool {
 	return s.current >= len(s.Source)
 }
 
+func (s *Scanner) IsAtEndOffset(offset int) bool {
+	return s.current + offset >= len(s.Source)
+}
+
 func (s *Scanner) advance() byte {
 	idx := s.current
 	s.current++
 	return s.Source[idx]
+}
+
+func (s *Scanner) peek() (byte, bool) {
+	if s.IsAtEnd() {
+		return '0', true
+	}
+	return s.Source[s.current], false
+}
+
+//func(s *Scanner) match(char byte) bool {
+//	if s.IsAtEnd() {
+//		return false
+//	}
+//	if s.Source[s.current] != char {
+//		return false
+//	}
+//
+//	s.current++
+//	return true
+//}
+
+func (s *Scanner) match(chars ...byte) bool {
+	if s.IsAtEnd() && s.IsAtEndOffset(len(chars)){
+		return false
+	}
+
+	for idx, c := range chars {
+		if s.Source[s.current + idx] != c {
+			return false
+		}
+	}
+
+	s.current += len(chars)
+	return true
 }
 
 func (s *Scanner) addToken(Type TokenType, literal interface{}) {
