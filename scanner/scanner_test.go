@@ -111,4 +111,43 @@ func TestScanner(t *testing.T) {
 			},
 		})
 	})
+
+	t.Run("operators", func(t *testing.T) {
+		scanner := NewScanner("+-/>=<=")
+		tokens := scanner.ScanTokens()
+
+		expectedTokens := []Token{
+			{
+				Type:    PLUS,
+				Lexeme:  "+",
+				Line:    0,
+			},
+			{
+				Type:    MINUS,
+				Lexeme:  "-",
+				Line:    0,
+			},
+			{
+				Type:    SLASH,
+				Lexeme:  "/",
+				Line:    0,
+			},
+			{
+				Type:    GREATER_EQUAL,
+				Lexeme:  ">=",
+				Line:    0,
+			},
+			{
+				Type:    LESS_EUQAL,
+				Lexeme:  "<=",
+				Line:    0,
+			},
+			{
+				Type: EOF,
+				Line: 0,
+			},
+		}
+
+		assert.Equal(t, expectedTokens, tokens)
+	})
 }
