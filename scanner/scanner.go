@@ -151,11 +151,14 @@ func (s *Scanner) scanToken() {
 	case '\n':
 		fmt.Println("new lineeeee")
 		s.line++
+	case '"':
+		s.string()
 
 	default:
 		logErr(s.line, "Unexpected character")
 	}
 }
+
 
 func equalBytes(a []byte, b []byte) bool {
 	if len(a) != len(b) {
@@ -169,6 +172,26 @@ func equalBytes(a []byte, b []byte) bool {
 	}
 
 	return true
+}
+
+// string by default is multiline string
+func (s *Scanner) string() {
+	for !equalBytes(s.peek(0), []byte{'"'}) && !s.IsAtEnd() {
+		if equalBytes(s.peek(0), []byte{'\n'}) {
+			s.line++
+			s.advance()
+		}
+
+		if s.IsAtEnd() {
+			logErr(s.line, "unterminated string")
+			return
+		}
+	}
+
+	s.advance() // the closing "
+
+	value := s.Source[s.start+1:s.current-1] // remove the start & end quote
+	s.addToken(STRING, value)
 }
 
 //IsAtEnd represents there's no more character left to consume
