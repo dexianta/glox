@@ -2,6 +2,7 @@ package scanner
 
 import (
 	"fmt"
+	"strconv"
 )
 
 var hadError = false
@@ -149,13 +150,16 @@ func (s *Scanner) scanToken() {
 	case '\r':
 	case '\t':
 	case '\n':
-		fmt.Println("new lineeeee")
 		s.line++
 	case '"':
 		s.string()
 
 	default:
-		logErr(s.line, "Unexpected character")
+		if isDigit(c) {
+			s.number()
+		} else {
+			logErr(s.line, "Unexpected character")
+		}
 	}
 }
 
@@ -174,18 +178,43 @@ func equalBytes(a []byte, b []byte) bool {
 	return true
 }
 
+func isDigit(char byte) bool {
+	return char > '0' && char < '9'
+}
+
+func (s *Scanner) number() {
+	for len(s.peek(0)) != 0 && isDigit(s.peek(0)[0]) {
+		s.advance()
+	}
+
+	if len(s.peek(0)) != 0 && s.peek(0)[0] == '.' && isDigit(s.peek(1)[1]) {
+		s.advance() // consume the "."
+
+		for len(s.peek(0)) != 0 && isDigit(s.peek(0)[0]) {
+			s.advance()
+		}
+	}
+
+	number, err := strconv.ParseFloat(s.Source[s.start:s.current], 64)
+	if err != nil {
+		logErr(s.line, fmt.Sprintf("error parsing float: %s", err.Error()))
+	}
+
+	s.addToken(NUMBER, number)
+}
+
 // string by default is multiline string
 func (s *Scanner) string() {
 	for !equalBytes(s.peek(0), []byte{'"'}) && !s.IsAtEnd() {
 		if equalBytes(s.peek(0), []byte{'\n'}) {
 			s.line++
-			s.advance()
 		}
+		s.advance()
+	}
 
-		if s.IsAtEnd() {
-			logErr(s.line, "unterminated string")
-			return
-		}
+	if s.IsAtEnd() {
+		logErr(s.line, "unterminated string")
+		return
 	}
 
 	s.advance() // the closing "

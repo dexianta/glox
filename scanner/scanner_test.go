@@ -5,8 +5,6 @@ import (
 	"testing"
 )
 
-
-
 func TestScanner(t *testing.T) {
 	t.Run("scan brackets", func(t *testing.T) {
 		scanner := NewScanner("(){}")
@@ -149,5 +147,92 @@ func TestScanner(t *testing.T) {
 		}
 
 		assert.Equal(t, expectedTokens, tokens)
+	})
+
+	t.Run("test string", func(t *testing.T) {
+		scanner := NewScanner("\"hello world\"\n//\"hello world\"")
+		tokens := scanner.ScanTokens()
+
+		expectedToken := []Token{{
+			Type:    STRING,
+			Lexeme:  "\"hello world\"",
+			Literal: "hello world",
+			Line:    0,
+		},
+			{
+				Type:    EOF,
+				Line:    1,
+			},
+		}
+
+		assert.Equal(t, tokens, expectedToken)
+	})
+
+
+	t.Run("test number", func(t *testing.T) {
+		scanner := NewScanner("32")
+		tokens := scanner.ScanTokens()
+
+		expectedToken := []Token{{
+			Type:    NUMBER,
+			Lexeme:  "32",
+			Literal: 32.0,
+			Line:    0,
+		},
+			{
+				Type:    EOF,
+				Line:    0,
+			},
+		}
+
+		assert.Equal(t, tokens, expectedToken)
+	})
+
+	t.Run("test number, decimal number", func(t *testing.T) {
+		scanner := NewScanner("32.123")
+		tokens := scanner.ScanTokens()
+
+		expectedToken := []Token{
+			{
+				 Type:    NUMBER,
+				 Lexeme:  "32.123",
+				 Literal: 32.123,
+				 Line:    0,
+			},
+			{
+				Type:    EOF,
+				Line:    0,
+			},
+		}
+
+		assert.Equal(t, tokens, expectedToken)
+	})
+
+	t.Run("test number, multiple decimal number", func(t *testing.T) {
+		scanner := NewScanner("32.123 546.123")
+		tokens := scanner.ScanTokens()
+
+		expectedToken := []Token{
+			{
+				Type:    NUMBER,
+				Lexeme:  "32.123",
+				Literal: 32.123,
+				Line:    0,
+			},
+
+			{
+				Type:    NUMBER,
+				Lexeme:  "546.123",
+				Literal: 546.123,
+				Line:    0,
+			},
+
+			{
+				Type:    EOF,
+				Line:    0,
+			},
+		}
+
+		assert.Equal(t, tokens, expectedToken)
 	})
 }
