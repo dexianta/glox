@@ -172,12 +172,16 @@ func (s *Scanner) scanToken() {
 			}
 		} else if s.match('*') {
 			for !s.match('*', '/') && !s.IsAtEnd() {
+				if equalBytes(s.peek(0), []byte{'\n'}) {
+					s.line++
+				}
 				s.advance()
 			}
 		} else {
 			s.addToken(SLASH, nil)
 		}
 
+	case ' ':
 	case '\r':
 	case '\t':
 	case '\n':
@@ -191,7 +195,7 @@ func (s *Scanner) scanToken() {
 		} else if isAlpha(c) {
 			s.identifier()
 		} else {
-			logErr(s.line, "Unexpected character")
+			logErr(s.line, fmt.Sprintf("Unexpected character: %c", c))
 		}
 	}
 }
@@ -332,6 +336,6 @@ func logErr(line int, msg string) {
 }
 
 func report(line int, where, msg string) {
-	fmt.Printf("[line \"%d\"] Error %s \": \" %s", line, where, msg)
+	fmt.Printf("[line \"%d\"] Error %s \": \" %s\n", line, where, msg)
 	hadError = true
 }

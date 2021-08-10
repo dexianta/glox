@@ -79,6 +79,37 @@ func TestScanner(t *testing.T) {
 		})
 	})
 
+	t.Run("scan brackets with multiline comments", func(t *testing.T) {
+		scanner := NewScanner("()/*()\n()\n()*/()")
+		tokens := scanner.ScanTokens()
+		assert.Equal(t, tokens, []Token{
+			{
+				Type:   LEFT_PAREN,
+				Lexeme: "(",
+				Line:   0,
+			},
+			{
+				Type:   RIGHT_PAREN,
+				Lexeme: ")",
+				Line:   0,
+			},
+			{
+				Type:   LEFT_PAREN,
+				Lexeme: "(",
+				Line:   2,
+			},
+			{
+				Type:   RIGHT_PAREN,
+				Lexeme: ")",
+				Line:   2,
+			},
+			{
+				Type: EOF,
+				Line: 2,
+			},
+		})
+	})
+
 	t.Run("testing comments", func(t *testing.T) {
 		scanner := NewScanner("()//()()()\n()")
 		tokens := scanner.ScanTokens()
