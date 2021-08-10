@@ -116,29 +116,29 @@ func TestScanner(t *testing.T) {
 
 		expectedTokens := []Token{
 			{
-				Type:    PLUS,
-				Lexeme:  "+",
-				Line:    0,
+				Type:   PLUS,
+				Lexeme: "+",
+				Line:   0,
 			},
 			{
-				Type:    MINUS,
-				Lexeme:  "-",
-				Line:    0,
+				Type:   MINUS,
+				Lexeme: "-",
+				Line:   0,
 			},
 			{
-				Type:    SLASH,
-				Lexeme:  "/",
-				Line:    0,
+				Type:   SLASH,
+				Lexeme: "/",
+				Line:   0,
 			},
 			{
-				Type:    GREATER_EQUAL,
-				Lexeme:  ">=",
-				Line:    0,
+				Type:   GREATER_EQUAL,
+				Lexeme: ">=",
+				Line:   0,
 			},
 			{
-				Type:    LESS_EUQAL,
-				Lexeme:  "<=",
-				Line:    0,
+				Type:   LESS_EUQAL,
+				Lexeme: "<=",
+				Line:   0,
 			},
 			{
 				Type: EOF,
@@ -160,14 +160,13 @@ func TestScanner(t *testing.T) {
 			Line:    0,
 		},
 			{
-				Type:    EOF,
-				Line:    1,
+				Type: EOF,
+				Line: 1,
 			},
 		}
 
 		assert.Equal(t, tokens, expectedToken)
 	})
-
 
 	t.Run("test number", func(t *testing.T) {
 		scanner := NewScanner("32")
@@ -180,8 +179,8 @@ func TestScanner(t *testing.T) {
 			Line:    0,
 		},
 			{
-				Type:    EOF,
-				Line:    0,
+				Type: EOF,
+				Line: 0,
 			},
 		}
 
@@ -194,14 +193,14 @@ func TestScanner(t *testing.T) {
 
 		expectedToken := []Token{
 			{
-				 Type:    NUMBER,
-				 Lexeme:  "32.123",
-				 Literal: 32.123,
-				 Line:    0,
+				Type:    NUMBER,
+				Lexeme:  "32.123",
+				Literal: 32.123,
+				Line:    0,
 			},
 			{
-				Type:    EOF,
-				Line:    0,
+				Type: EOF,
+				Line: 0,
 			},
 		}
 
@@ -228,8 +227,70 @@ func TestScanner(t *testing.T) {
 			},
 
 			{
-				Type:    EOF,
-				Line:    0,
+				Type: EOF,
+				Line: 0,
+			},
+		}
+
+		assert.Equal(t, tokens, expectedToken)
+	})
+
+	t.Run("identifier", func(t *testing.T) {
+		scanner := NewScanner("if {hello} else {world}")
+		tokens := scanner.ScanTokens()
+
+		expectedToken := []Token{
+			{
+				Type:   IF,
+				Lexeme: "if",
+				Line:   0,
+			},
+
+			{
+				Type:   LEFT_BRACE,
+				Lexeme: "{",
+				Line:   0,
+			},
+
+			{
+				Type:   IDENTIFIER,
+				Lexeme: "hello",
+				Line:   0,
+			},
+
+			{
+				Type:   RIGHT_BRACE,
+				Lexeme: "}",
+				Line:   0,
+			},
+
+			{
+				Type:   ELSE,
+				Lexeme: "else",
+				Line:   0,
+			},
+
+			{
+				Type:   LEFT_BRACE,
+				Lexeme: "{",
+				Line:   0,
+			},
+
+			{
+				Type:   IDENTIFIER,
+				Lexeme: "world",
+				Line:   0,
+			},
+
+			{
+				Type:   RIGHT_BRACE,
+				Lexeme: "}",
+				Line:   0,
+			},
+
+			{
+				Type: EOF,
+				Line: 0,
 			},
 		}
 

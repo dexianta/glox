@@ -8,7 +8,6 @@ import (
 	"os"
 )
 
-
 func main() {
 	if len(os.Args) > 2 {
 		panic("Usage: glox [script]")
@@ -54,5 +53,3 @@ func run(code string) error {
 
 	return nil
 }
-
-

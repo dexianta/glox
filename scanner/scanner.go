@@ -7,56 +7,77 @@ import (
 
 var hadError = false
 
-type TokenType uint
+type TokenType string
 
 const (
 	// single character tokens
-	LEFT_PAREN TokenType = iota
-	RIGHT_PAREN
-	LEFT_BRACE
-	RIGHT_BRACE
-	COMMA
-	DOT
-	MINUS
-	PLUS
-	SEMICOLON
-	SLASH
-	STAR
+	LEFT_PAREN  = "("
+	RIGHT_PAREN = ")"
+	LEFT_BRACE  = "{"
+	RIGHT_BRACE = "}"
+	COMMA       = ","
+	DOT         = "."
+	MINUS       = "-"
+	PLUS        = "+"
+	SEMICOLON   = ";"
+	SLASH       = "/"
+	STAR        = "*"
 
 	// one or two character tokens
-	BANG
-	BANG_EQUAL
-	EQUAL
-	EQUAL_EQUAL
-	GREATER
-	GREATER_EQUAL
-	LESS
-	LESS_EUQAL
+	BANG          = "!"
+	BANG_EQUAL    = "!="
+	EQUAL         = "="
+	EQUAL_EQUAL   = "=="
+	GREATER       = ">"
+	GREATER_EQUAL = ">="
+	LESS          = "<"
+	LESS_EUQAL    = "<="
 
 	// literals
-	INDETIFIER
-	STRING
-	NUMBER
+	IDENTIFIER = "identifier"
+	STRING     = "string"
+	NUMBER     = "number"
 
 	// keywords
-	AND
-	CLASS
-	ELSE
-	FALSE
-	FUN
-	FOR
-	IF
-	NIL
-	OR
-	PRINT
-	RETURN
-	SUPER
-	THIS
-	TRUE
-	VAR
-	WHILE
-	EOF
+	AND    = "and"
+	CLASS  = "class"
+	ELSE   = "else"
+	FALSE  = "false"
+	FUN    = "fun"
+	FOR    = "for"
+	IF     = "if"
+	NIL    = "nil"
+	OR     = "or"
+	PRINT  = "print"
+	RETURN = "return"
+	SUPER  = "super"
+	THIS   = "this"
+	TRUE   = "true"
+	VAR    = "var"
+	WHILE  = "while"
+	EOF    = "eof"
 )
+
+var keywords = map[string]TokenType{}
+
+func init() {
+	keywords["and"] = AND
+	keywords["class"] = CLASS
+	keywords["else"] = ELSE
+	keywords["false"] = FALSE
+	keywords["for"] = FOR
+	keywords["fun"] = FUN
+	keywords["if"] = IF
+	keywords["nil"] = NIL
+	keywords["or"] = OR
+	keywords["print"] = PRINT
+	keywords["return"] = RETURN
+	keywords["super"] = SUPER
+	keywords["this"] = THIS
+	keywords["true"] = TRUE
+	keywords["var"] = VAR
+	keywords["while"] = WHILE
+}
 
 type Token struct {
 	Type    TokenType
@@ -95,16 +116,26 @@ func (s *Scanner) ScanTokens() []Token {
 func (s *Scanner) scanToken() {
 	c := s.advance()
 	switch c {
-	case '(': s.addToken(LEFT_PAREN, nil)
-	case ')': s.addToken(RIGHT_PAREN, nil)
-	case '{': s.addToken(LEFT_BRACE, nil)
-	case '}': s.addToken(RIGHT_BRACE, nil)
-	case ',': s.addToken(COMMA, nil)
-	case '.': s.addToken(DOT, nil)
-	case '-': s.addToken(MINUS, nil)
-	case '+': s.addToken(PLUS, nil)
-	case '*': s.addToken(STAR, nil)
-	case ';': s.addToken(SEMICOLON, nil)
+	case '(':
+		s.addToken(LEFT_PAREN, nil)
+	case ')':
+		s.addToken(RIGHT_PAREN, nil)
+	case '{':
+		s.addToken(LEFT_BRACE, nil)
+	case '}':
+		s.addToken(RIGHT_BRACE, nil)
+	case ',':
+		s.addToken(COMMA, nil)
+	case '.':
+		s.addToken(DOT, nil)
+	case '-':
+		s.addToken(MINUS, nil)
+	case '+':
+		s.addToken(PLUS, nil)
+	case '*':
+		s.addToken(STAR, nil)
+	case ';':
+		s.addToken(SEMICOLON, nil)
 
 	case '!':
 		if s.match('=') {
@@ -140,7 +171,7 @@ func (s *Scanner) scanToken() {
 				s.advance()
 			}
 		} else if s.match('*') {
-			for !s.match('*', '/') && !s.IsAtEnd(){
+			for !s.match('*', '/') && !s.IsAtEnd() {
 				s.advance()
 			}
 		} else {
@@ -157,12 +188,13 @@ func (s *Scanner) scanToken() {
 	default:
 		if isDigit(c) {
 			s.number()
+		} else if isAlpha(c) {
+			s.identifier()
 		} else {
 			logErr(s.line, "Unexpected character")
 		}
 	}
 }
-
 
 func equalBytes(a []byte, b []byte) bool {
 	if len(a) != len(b) {
@@ -180,6 +212,28 @@ func equalBytes(a []byte, b []byte) bool {
 
 func isDigit(char byte) bool {
 	return char > '0' && char < '9'
+}
+
+func isAlpha(char byte) bool {
+	return (char > 'a' && char < 'z') || (char > 'A' && char < 'Z') || char == '_'
+}
+
+func isAlphaNumeric(c byte) bool {
+	return isDigit(c) || isAlpha(c)
+}
+
+func (s *Scanner) identifier() {
+	for len(s.peek(0)) != 0 && isAlphaNumeric(s.peek(0)[0]) {
+		s.advance()
+	}
+
+	text := s.Source[s.start:s.current]
+	tokenType, ok := keywords[text]
+	if !ok {
+		tokenType = IDENTIFIER
+	}
+
+	s.addToken(tokenType, nil)
 }
 
 func (s *Scanner) number() {
@@ -219,7 +273,7 @@ func (s *Scanner) string() {
 
 	s.advance() // the closing "
 
-	value := s.Source[s.start+1:s.current-1] // remove the start & end quote
+	value := s.Source[s.start+1 : s.current-1] // remove the start & end quote
 	s.addToken(STRING, value)
 }
 
@@ -229,7 +283,7 @@ func (s *Scanner) IsAtEnd() bool {
 }
 
 func (s *Scanner) IsAtEndOffset(offset int) bool {
-	return s.current + offset >= len(s.Source)
+	return s.current+offset >= len(s.Source)
 }
 
 func (s *Scanner) advance() byte {
@@ -243,31 +297,19 @@ func (s *Scanner) peek(step int) (res []byte) {
 		return
 	}
 
-	for i := s.current; i <= s.current + step; i++ {
+	for i := s.current; i <= s.current+step; i++ {
 		res = append(res, s.Source[i])
 	}
 	return
 }
 
-//func(s *Scanner) match(char byte) bool {
-//	if s.IsAtEnd() {
-//		return false
-//	}
-//	if s.Source[s.current] != char {
-//		return false
-//	}
-//
-//	s.current++
-//	return true
-//}
-
 func (s *Scanner) match(chars ...byte) bool {
-	if s.IsAtEnd() && s.IsAtEndOffset(len(chars)){
+	if s.IsAtEnd() && s.IsAtEndOffset(len(chars)) {
 		return false
 	}
 
 	for idx, c := range chars {
-		if s.Source[s.current + idx] != c {
+		if s.Source[s.current+idx] != c {
 			return false
 		}
 	}
