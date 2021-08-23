@@ -80,8 +80,8 @@ func init() {
 }
 
 type Token struct {
-	Type    TokenType
-	Lexeme  string
+	Type   TokenType
+	Lexeme string
 	Literal interface{}
 	Line    int
 }
