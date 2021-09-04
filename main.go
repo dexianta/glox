@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"dexianta/glox/scanner"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -45,7 +44,7 @@ func runPrompt() error {
 }
 
 func run(code string) error {
-	s := scanner.NewScanner(code)
+	s := NewScanner(code)
 	tokens := s.ScanTokens()
 	for _, t := range tokens {
 		fmt.Println(t)

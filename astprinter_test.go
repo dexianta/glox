@@ -1,7 +1,6 @@
-package expr
+package main
 
 import (
-	"dexianta/glox/scanner"
 	"fmt"
 	"testing"
 )
@@ -9,16 +8,16 @@ import (
 func TestAstPrinter(t *testing.T) {
 	expr := Binary{
 		Left:     Unary{
-			Operator: scanner.Token{
-				Type:    scanner.MINUS,
+			Operator: main.Token{
+				Type:    main.MINUS,
 				Lexeme:  "-",
 				Literal: nil,
 				Line:    1,
 			},
-			Right:    Literal{Value: 1231},
+			Right: Literal{Value: 1231},
 		},
-		Operator: scanner.Token{
-			Type:    scanner.STAR,
+		Operator: main.Token{
+			Type:    main.STAR,
 			Lexeme:  "*",
 			Literal: nil,
 			Line:    1,

@@ -1,8 +1,34 @@
-package expr
+package main
 
 import (
-	"dexianta/glox/scanner"
+	"fmt"
+	"strconv"
 )
+
+type Expr interface{
+	isExpr()
+	accept(visitor Visitor) Value
+}
+
+type Value struct {
+	object interface{}
+}
+
+func (v Value) string() string {
+	return fmt.Sprintf("%v", v.object)
+}
+
+func (v Value) number() float64 {
+	num, err := strconv.ParseFloat(fmt.Sprintf("%v", v.object), 64)
+	if err != nil {
+		panic(err.Error())
+	}
+	return num
+}
+
+// ================================================ //
+//						Visitors
+// ================================================ //
 
 type Visitor interface{
 	visitBinary(binary Binary) Value
@@ -12,9 +38,10 @@ type Visitor interface{
 }
 
 // ========================= //
+
 type Binary struct {
 	Left     Expr
-	Operator scanner.Token
+	Operator Token
 	Right    Expr
 }
 func (b Binary) isExpr() {}
@@ -23,6 +50,7 @@ func (b Binary) accept(visitor Visitor) Value {
 }
 
 // ========================= //
+
 type Grouping struct {
 	Expression Expr
 }
@@ -32,6 +60,7 @@ func (g Grouping) accept(visitor Visitor) Value {
 }
 
 // ========================= //
+
 type Literal struct {
 	Value interface{}
 }
@@ -41,9 +70,10 @@ func (l Literal) accept(visitor Visitor) Value {
 }
 
 // ========================= //
+
 type Unary struct {
-	Operator scanner.Token
-	Right Expr
+	Operator Token
+	Right    Expr
 }
 func (u Unary) isExpr() {}
 func (u Unary) accept(visitor Visitor) Value {
