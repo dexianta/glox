@@ -80,3 +80,20 @@ func (u Unary) accept(visitor Visitor) Value {
 	return visitor.visitUnary(u)
 }
 
+func logErr(line int, msg string) {
+	report(line, "", msg)
+}
+
+func report(line int, where, msg string) {
+	fmt.Printf("[line \"%d\"] Error %s \": \" %s\n", line, where, msg)
+	hadError = true
+}
+
+func hasError(token Token, msg string) {
+	if token.Type == EOF {
+		report(token.Line, " at end", msg)
+	} else {
+		report(token.Line, "at '" + token.Lexeme + "'", msg)
+	}
+}
+

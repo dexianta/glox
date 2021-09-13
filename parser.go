@@ -1,5 +1,7 @@
 package main
 
+import "errors"
+
 // syntax tree
 // ===========================================================
 // expression     → equality ;
@@ -117,11 +119,29 @@ func (p *Parser) primary() Expr {
 		return Literal{p.previous().Literal}
 	}
 
-	//if p.match(LEFT_PAREN) {
-	//	expr := p.expr()
-	//}
+	if p.match(LEFT_PAREN) {
+		expr := p.expr()
+		p.consume(RIGHT_PAREN, "Expect ')' after expression")
+		return Grouping{expr}
+	}
+
+	return nil
 }
 
+func (p *Parser) consume(tokenType TokenType, msg string) (Token, error) {
+	if p.check(tokenType) {
+		return p.advance(), nil
+	}
+
+	return Token{}, p.error(p.peek(), msg)
+}
+
+func (p *Parser) error(token Token, msg string) error {
+	hasError(token, msg)
+	return ParseError
+}
+
+var ParseError = errors.New("parse error")
 
 // ===========================================
 // helpers
