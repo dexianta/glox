@@ -7,7 +7,7 @@ import (
 
 func TestAstPrinter(t *testing.T) {
 	expr := Binary{
-		Left:     Unary{
+		Left: Unary{
 			Operator: main.Token{
 				Type:    main.MINUS,
 				Lexeme:  "-",
@@ -22,7 +22,7 @@ func TestAstPrinter(t *testing.T) {
 			Literal: nil,
 			Line:    1,
 		},
-		Right:    Grouping{
+		Right: Grouping{
 			Expression: Literal{Value: 42.12},
 		},
 	}

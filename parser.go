@@ -14,25 +14,41 @@ import "errors"
 
 type Parser struct {
 	current int
-	tokens []Token
+	tokens  []Token
 }
 
 func NewParser(tokens []Token) Parser {
 	return Parser{
-		tokens:  tokens,
+		tokens: tokens,
 	}
 }
 
-func (p *Parser) expr() Expr {
+func (p *Parser) Parse() (Expr, error) {
+	expr, err := p.expr()
+	switch err {
+	case ParseError:
+		return nil, err
+	default:
+		return expr, err
+	}
+}
+
+func (p *Parser) expr() (Expr, error) {
 	return p.equality()
 }
 
-func (p *Parser) equality() Expr {
-	expr := p.comparison()
+func (p *Parser) equality() (Expr, error) {
+	expr, err := p.comparison()
+	if err != nil {
+		return expr, err
+	}
 
 	for p.match(BANG_EQUAL, EQUAL_EQUAL) {
 		operator := p.previous()
-		right := p.comparison()
+		right, err := p.comparison()
+		if err != nil {
+			return right, err
+		}
 		expr = Binary{
 			Left:     expr,
 			Operator: operator,
@@ -40,15 +56,21 @@ func (p *Parser) equality() Expr {
 		}
 	}
 
-	return expr
+	return expr, nil
 }
 
-func (p *Parser) comparison() Expr {
-	expr := p.term()
+func (p *Parser) comparison() (Expr, error) {
+	expr, err := p.term()
+	if err != nil {
+		return expr, err
+	}
 
 	for p.match(GREATER, GREATER_EQUAL, LESS, LESS_EUQAL) {
 		operator := p.previous()
-		right := p.term()
+		right, err := p.term()
+		if err != nil {
+			return expr, err
+		}
 		expr = Binary{
 			Left:     expr,
 			Operator: operator,
@@ -56,15 +78,21 @@ func (p *Parser) comparison() Expr {
 		}
 	}
 
-	return expr
+	return expr, nil
 }
 
-func (p *Parser) term() Expr {
-	expr := p.factor()
+func (p *Parser) term() (Expr, error) {
+	expr, err := p.factor()
+	if err != nil {
+		return expr, err
+	}
 
 	for p.match(MINUS, PLUS) {
 		operator := p.previous()
-		right := p.factor()
+		right, err := p.factor()
+		if err != nil {
+			return right, err
+		}
 		expr = Binary{
 			Left:     expr,
 			Operator: operator,
@@ -72,15 +100,21 @@ func (p *Parser) term() Expr {
 		}
 	}
 
-	return expr
+	return expr, nil
 }
 
-func (p *Parser) factor() Expr {
-	expr := p.unary()
+func (p *Parser) factor() (Expr, error) {
+	expr, err := p.unary()
+	if err != nil {
+		return expr, err
+	}
 
 	for p.match(SLASH, STAR) {
 		operator := p.previous()
-		right := p.unary()
+		right, err := p.unary()
+		if err != nil {
+			return expr, err
+		}
 		expr = Binary{
 			Left:     expr,
 			Operator: operator,
@@ -88,44 +122,47 @@ func (p *Parser) factor() Expr {
 		}
 	}
 
-	return expr
+	return expr, nil
 }
 
-func (p *Parser) unary() Expr {
+func (p *Parser) unary() (Expr, error) {
 	if p.match(BANG, MINUS) {
 		operator := p.previous()
-		right := p.unary()
+		right, err := p.unary()
 		return Unary{
 			Operator: operator,
-			Right:   right,
-		}
+			Right:    right,
+		}, err
 	}
 
 	return p.primary()
 }
 
-func (p *Parser) primary() Expr {
+func (p *Parser) primary() (Expr, error) {
 	if p.match(FALSE) {
-		return Literal{false}
+		return Literal{false}, nil
 	}
 	if p.match(TRUE) {
-		return Literal{true}
+		return Literal{true}, nil
 	}
 	if p.match(NIL) {
-		return Literal{nil}
+		return Literal{nil}, nil
 	}
 
 	if p.match(NUMBER, STRING) {
-		return Literal{p.previous().Literal}
+		return Literal{p.previous().Literal}, nil
 	}
 
 	if p.match(LEFT_PAREN) {
-		expr := p.expr()
+		expr, err := p.expr()
+		if err != nil {
+			return expr, err
+		}
 		p.consume(RIGHT_PAREN, "Expect ')' after expression")
-		return Grouping{expr}
+		return Grouping{expr}, nil
 	}
 
-	return nil
+	return nil, p.error(p.peek(), "expect expression")
 }
 
 func (p *Parser) consume(tokenType TokenType, msg string) (Token, error) {
@@ -137,7 +174,7 @@ func (p *Parser) consume(tokenType TokenType, msg string) (Token, error) {
 }
 
 func (p *Parser) error(token Token, msg string) error {
-	hasError(token, msg)
+	LoxError(token, msg)
 	return ParseError
 }
 
@@ -183,5 +220,19 @@ func (p *Parser) previous() Token {
 	return p.tokens[p.current-1]
 }
 
+// keep discarding the token until we hit the beginning of the next statement
+func (p *Parser) sync() {
+	p.advance()
+	for !p.isAtEnd() {
+		if p.previous().Type == SEMICOLON {
+			return
+		}
 
-
+		switch p.peek().Type {
+		case CLASS, FUN, VAR, FOR, IF, WHILE, PRINT, RETURN:
+			return
+		default:
+			p.advance()
+		}
+	}
+}

@@ -2,7 +2,7 @@ package main
 
 import "strings"
 
-type AstPrinter struct {}
+type AstPrinter struct{}
 
 func (a AstPrinter) Print(expr Expr) string {
 	return expr.accept(a).string()
@@ -38,5 +38,3 @@ func (a AstPrinter) parenthesize(name string, exprs ...Expr) Value {
 	sb.WriteString(")")
 	return Value{object: sb.String()}
 }
-
-

@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-type Expr interface{
+type Expr interface {
 	isExpr()
 	accept(visitor Visitor) Value
 }
@@ -30,7 +30,7 @@ func (v Value) number() float64 {
 //						Visitors
 // ================================================ //
 
-type Visitor interface{
+type Visitor interface {
 	visitBinary(binary Binary) Value
 	visitGrouping(grouping Grouping) Value
 	visitLiteral(literal Literal) Value
@@ -44,6 +44,7 @@ type Binary struct {
 	Operator Token
 	Right    Expr
 }
+
 func (b Binary) isExpr() {}
 func (b Binary) accept(visitor Visitor) Value {
 	return visitor.visitBinary(b)
@@ -54,6 +55,7 @@ func (b Binary) accept(visitor Visitor) Value {
 type Grouping struct {
 	Expression Expr
 }
+
 func (g Grouping) isExpr() {}
 func (g Grouping) accept(visitor Visitor) Value {
 	return visitor.visitGrouping(g)
@@ -64,6 +66,7 @@ func (g Grouping) accept(visitor Visitor) Value {
 type Literal struct {
 	Value interface{}
 }
+
 func (l Literal) isExpr() {}
 func (l Literal) accept(visitor Visitor) Value {
 	return visitor.visitLiteral(l)
@@ -75,6 +78,7 @@ type Unary struct {
 	Operator Token
 	Right    Expr
 }
+
 func (u Unary) isExpr() {}
 func (u Unary) accept(visitor Visitor) Value {
 	return visitor.visitUnary(u)
@@ -83,17 +87,3 @@ func (u Unary) accept(visitor Visitor) Value {
 func logErr(line int, msg string) {
 	report(line, "", msg)
 }
-
-func report(line int, where, msg string) {
-	fmt.Printf("[line \"%d\"] Error %s \": \" %s\n", line, where, msg)
-	hadError = true
-}
-
-func hasError(token Token, msg string) {
-	if token.Type == EOF {
-		report(token.Line, " at end", msg)
-	} else {
-		report(token.Line, "at '" + token.Lexeme + "'", msg)
-	}
-}
-
