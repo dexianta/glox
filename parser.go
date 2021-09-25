@@ -23,13 +23,13 @@ func NewParser(tokens []Token) Parser {
 	}
 }
 
-func (p *Parser) Parse() (Expr, error) {
+func (p *Parser) Parse() Expr  {
 	expr, err := p.expr()
 	switch err {
 	case ParseError:
-		return nil, err
+		return nil
 	default:
-		return expr, err
+		return expr
 	}
 }
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -46,9 +47,14 @@ func runPrompt() error {
 func run(code string) error {
 	s := NewScanner(code)
 	tokens := s.ScanTokens()
-	for _, t := range tokens {
-		fmt.Println(t)
+	parser := NewParser(tokens)
+	expr := parser.Parse()
+
+	if hadError {
+		return errors.New("something is wrong")
 	}
+
+	AstPrinter{}.Print(expr)
 
 	return nil
 }
