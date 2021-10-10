@@ -1,6 +1,7 @@
-package main
+package scanner
 
 import (
+	"dexianta/glox/errorhandle"
 	"fmt"
 	"strconv"
 )
@@ -9,51 +10,51 @@ type TokenType string
 
 const (
 	// single character tokens
-	LEFT_PAREN  = "("
-	RIGHT_PAREN = ")"
-	LEFT_BRACE  = "{"
-	RIGHT_BRACE = "}"
-	COMMA       = ","
-	DOT         = "."
-	MINUS       = "-"
-	PLUS        = "+"
-	SEMICOLON   = ";"
-	SLASH       = "/"
-	STAR        = "*"
+	LEFT_PAREN  TokenType = "("
+	RIGHT_PAREN TokenType = ")"
+	LEFT_BRACE  TokenType = "{"
+	RIGHT_BRACE TokenType = "}"
+	COMMA       TokenType = ","
+	DOT         TokenType = "."
+	MINUS       TokenType = "-"
+	PLUS        TokenType = "+"
+	SEMICOLON   TokenType = ";"
+	SLASH       TokenType = "/"
+	STAR        TokenType = "*"
 
 	// one or two character tokens
-	BANG          = "!"
-	BANG_EQUAL    = "!="
-	EQUAL         = "="
-	EQUAL_EQUAL   = "=="
-	GREATER       = ">"
-	GREATER_EQUAL = ">="
-	LESS          = "<"
-	LESS_EUQAL    = "<="
+	BANG          TokenType = "!"
+	BANG_EQUAL    TokenType = "!="
+	EQUAL         TokenType = "="
+	EQUAL_EQUAL   TokenType = "=="
+	GREATER       TokenType = ">"
+	GREATER_EQUAL TokenType = ">="
+	LESS       TokenType = "<"
+	LESS_EQUAL TokenType = "<="
 
 	// literals
-	IDENTIFIER = "identifier"
-	STRING     = "string"
-	NUMBER     = "number"
+	IDENTIFIER TokenType = "identifier"
+	STRING     TokenType = "string"
+	NUMBER     TokenType = "number"
 
 	// keywords
-	AND    = "and"
-	CLASS  = "class"
-	ELSE   = "else"
-	FALSE  = "false"
-	FUN    = "fun"
-	FOR    = "for"
-	IF     = "if"
-	NIL    = "nil"
-	OR     = "or"
-	PRINT  = "print"
-	RETURN = "return"
-	SUPER  = "super"
-	THIS   = "this"
-	TRUE   = "true"
-	VAR    = "var"
-	WHILE  = "while"
-	EOF    = "eof"
+	AND    TokenType = "and"
+	CLASS  TokenType = "class"
+	ELSE   TokenType = "else"
+	FALSE  TokenType = "false"
+	FUN    TokenType = "fun"
+	FOR    TokenType = "for"
+	IF     TokenType = "if"
+	NIL    TokenType = "nil"
+	OR     TokenType = "or"
+	PRINT  TokenType = "print"
+	RETURN TokenType = "return"
+	SUPER  TokenType = "super"
+	THIS   TokenType = "this"
+	TRUE   TokenType = "true"
+	VAR    TokenType = "var"
+	WHILE  TokenType = "while"
+	EOF    TokenType = "eof"
 )
 
 var keywords = map[string]TokenType{}
@@ -78,9 +79,9 @@ func init() {
 }
 
 type Token struct {
-	Type    TokenType
-	Lexeme  string
-	Literal interface{}
+	Type    TokenType   // token type
+	Lexeme  string      // the string representation
+	Literal interface{} // actual value of this token
 	Line    int
 }
 
@@ -151,7 +152,7 @@ func (s *Scanner) scanToken() {
 
 	case '<':
 		if s.match('=') {
-			s.addToken(LESS_EUQAL, nil)
+			s.addToken(LESS_EQUAL, nil)
 		} else {
 			s.addToken(LESS, nil)
 		}
@@ -193,7 +194,7 @@ func (s *Scanner) scanToken() {
 		} else if isAlpha(c) {
 			s.identifier()
 		} else {
-			logErr(s.line, fmt.Sprintf("Unexpected character: %c", c))
+			errorhandle.ScanError(s.line, fmt.Sprintf("Unexpected character: %c", c))
 		}
 	}
 }
@@ -253,7 +254,7 @@ func (s *Scanner) number() {
 
 	number, err := strconv.ParseFloat(s.Source[s.start:s.current], 64)
 	if err != nil {
-		logErr(s.line, fmt.Sprintf("error parsing float: %s", err.Error()))
+		errorhandle.ScanError(s.line, fmt.Sprintf("errorhandle parsing float: %s", err.Error()))
 	}
 
 	s.addToken(NUMBER, number)
@@ -269,7 +270,7 @@ func (s *Scanner) string() {
 	}
 
 	if s.IsAtEnd() {
-		logErr(s.line, "unterminated string")
+		errorhandle.ScanError(s.line, "unterminated string")
 		return
 	}
 

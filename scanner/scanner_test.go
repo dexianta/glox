@@ -1,4 +1,4 @@
-package main
+package scanner
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -167,7 +167,7 @@ func TestScanner(t *testing.T) {
 				Line:   0,
 			},
 			{
-				Type:   LESS_EUQAL,
+				Type:   LESS_EQUAL,
 				Lexeme: "<=",
 				Line:   0,
 			},

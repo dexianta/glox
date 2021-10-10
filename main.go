@@ -2,6 +2,9 @@ package main
 
 import (
 	"bufio"
+	"dexianta/glox/errorhandle"
+	parser "dexianta/glox/parser"
+	"dexianta/glox/scanner"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -35,26 +38,24 @@ func runPrompt() error {
 		//TODO: multi-line input
 		line, err := reader.ReadString('\n')
 		if err != nil {
-			fmt.Println("error reading line: ", err.Error())
+			fmt.Println("errorhandle reading line: ", err.Error())
 		}
 
 		if err := run(line); err != nil {
-			fmt.Println("error running line: ", err.Error())
+			fmt.Println("errorhandle running line: ", err.Error())
 		}
 	}
 }
 
 func run(code string) error {
-	s := NewScanner(code)
+	s := scanner.NewScanner(code)
 	tokens := s.ScanTokens()
-	parser := NewParser(tokens)
-	expr := parser.Parse()
+	parser := parser.NewParser(tokens)
+	_ = parser.Parse()
 
-	if hadError {
+	if errorhandle.HadError {
 		return errors.New("something is wrong")
 	}
-
-	AstPrinter{}.Print(expr)
 
 	return nil
 }
