@@ -5,7 +5,7 @@ import (
 )
 
 type Expr interface {
-	isExpr()
+	//isExpr()
 }
 // ========================= //
 // 			expression

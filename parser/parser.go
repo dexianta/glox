@@ -173,7 +173,7 @@ func (p *Parser) primary() (Expr, error) {
 // helpers
 // ===========================================
 
-var ParseError = errors.New("parse errorhandle")
+var ParseError = errors.New("parse error")
 func (p *Parser) consume(tokenType scanner.TokenType, msg string) (scanner.Token, error) {
 	if p.check(tokenType) {
 		return p.advance(), nil

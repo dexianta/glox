@@ -11,6 +11,11 @@ import (
 	"os"
 )
 
+// TODO: different error at different stages
+var hasScanError bool
+var hasParsingError bool
+var hasRuntimeError bool
+
 func main() {
 	if len(os.Args) > 2 {
 		panic("Usage: glox [script]")
