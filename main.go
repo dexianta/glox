@@ -3,7 +3,7 @@ package main
 import (
 	"bufio"
 	"dexianta/glox/errorhandle"
-	parser "dexianta/glox/parser"
+	"dexianta/glox/parser"
 	"dexianta/glox/scanner"
 	"errors"
 	"fmt"

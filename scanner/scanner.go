@@ -194,7 +194,7 @@ func (s *Scanner) scanToken() {
 		} else if isAlpha(c) {
 			s.identifier()
 		} else {
-			errorhandle.ScanError(s.line, fmt.Sprintf("Unexpected character: %c", c))
+			errorhandle.Report(s.line, "", fmt.Sprintf("Unexpected character: %c", c))
 		}
 	}
 }
@@ -254,7 +254,7 @@ func (s *Scanner) number() {
 
 	number, err := strconv.ParseFloat(s.Source[s.start:s.current], 64)
 	if err != nil {
-		errorhandle.ScanError(s.line, fmt.Sprintf("errorhandle parsing float: %s", err.Error()))
+		errorhandle.Report(s.line, "",fmt.Sprintf("error handle parsing float: %s", err.Error()))
 	}
 
 	s.addToken(NUMBER, number)
@@ -270,7 +270,7 @@ func (s *Scanner) string() {
 	}
 
 	if s.IsAtEnd() {
-		errorhandle.ScanError(s.line, "unterminated string")
+		errorhandle.Report(s.line, "", "unterminated string")
 		return
 	}
 

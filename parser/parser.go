@@ -1,7 +1,7 @@
 package parser
 
 import (
-	error2 "dexianta/glox/errorhandle"
+	"dexianta/glox/errorhandle"
 	"dexianta/glox/scanner"
 	"errors"
 )
@@ -183,7 +183,11 @@ func (p *Parser) consume(tokenType scanner.TokenType, msg string) (scanner.Token
 }
 
 func (p *Parser) error(token scanner.Token, msg string) error {
-	error2.LoxError(token, msg)
+	if token.Type == scanner.EOF {
+		errorhandle.Report(token.Line, " at end", msg)
+	} else {
+		errorhandle.Report(token.Line, "at '"+token.Lexeme+"'", msg)
+	}
 	return ParseError
 }
 
